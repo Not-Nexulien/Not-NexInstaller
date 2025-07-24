@@ -1,6 +1,7 @@
-# Nexulien Installer
+# Not-Nexulien Installer
 
-The Nexulien Installer allows you to install [Nexulien, the best (worst) Vencord Fork](https://github.com/Nexulien/Nexulien)
+The Not-Nexulien Installer allows you to install [Not-Nexulien, the best (worst) Vencord Fork Fork](https://github.com/Not-Nexulien/Not-Nexulien)
 
-> [!WARNING]  
-> Currently only CLI on Windows is supported, building the GUI or using another OS may cause issues!
+[Windows Installer]()
+[Windows Installer CLI]()
+[Linux Installer]()
