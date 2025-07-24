@@ -35,18 +35,18 @@ jobs:
         run: go get -v
 
       - name: Build Cli
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -tags "static cli" -ldflags "-s -w -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexulienInstallerCli-linux
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -tags "static cli" -ldflags "-s -w -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexInstallerCli-linux
 
       - name: Update executable
         run: |
-          chmod +x Not-NexulienInstallerCli-linux
+          chmod +x Not-NexInstallerCli-linux
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Not-NexulienInstaller-linux
+          name: Not-NexInstaller-linux
           path: |
-            Not-NexulienInstallerCli-linux
+            Not-NexInstallerCli-linux
 
   build-windows:
     runs-on: windows-latest
@@ -93,22 +93,22 @@ jobs:
           export GOROOT=/mingw64/lib/go
           export GOPATH=/mingw64
           go-winres make --product-version "git-tag"
-          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags static -ldflags "-s -w -H=windowsgui -extldflags=-static -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexulienInstaller.exe
+          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -v -tags static -ldflags "-s -w -H=windowsgui -extldflags=-static -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexInstaller.exe
 
       - name: Build i386 Cli
         shell: msys2 {0}
         run: |
           export GOROOT=/mingw64/lib/go
           export GOPATH=/mingw64
-          CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -v -tags "static cli" -ldflags "-s -w -extldflags=-static -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexulienInstallerCli.exe
+          CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -v -tags "static cli" -ldflags "-s -w -extldflags=-static -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexInstallerCli.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Not-NexulienInstaller-windows
+          name: Not-NexInstaller-windows
           path: |
-            Not-NexulienInstaller.exe
-            Not-NexulienInstallerCli.exe
+            Not-NexInstaller.exe
+            Not-NexInstallerCli.exe
 
 
   release:
@@ -121,12 +121,12 @@ jobs:
 
       - uses: actions/download-artifact@v4.1.7
         with:
-          name: Not-NexulienInstaller-linux
+          name: Not-NexInstaller-linux
           path: linux
 
       - uses: actions/download-artifact@v4.1.7
         with:
-          name: Not-NexulienInstaller-windows
+          name: Not-NexInstaller-windows
           path: windows
 
       - name: Create the release
@@ -138,5 +138,5 @@ jobs:
           prerelease: false
           draft: false
           files: |
-            linux/Not-NexulienInstallerCli-linux
-            windows/Not-NexulienInstalle*.exe
+            linux/Not-NexInstallerCli-linux
+            windows/Not-NexInstalle*.exe
