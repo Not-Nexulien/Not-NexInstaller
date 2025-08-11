@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-22.04 # hopefully older glibc for better compatibility on systems like debian bullseye
+    runs-on: ubuntu-20.04 # hopefully older glibc for better compatibility on systems like debian bullseye
 
     steps:
       - name: Install Go
@@ -42,11 +42,67 @@ jobs:
           chmod +x Not-NexInstallerCli-linux
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: Not-NexInstaller-linux
           path: |
             Not-NexInstallerCli-linux
+
+
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+
+      - id: go-cache-paths
+        run: |
+          echo "go_build=$(go env GOCACHE)" >> $GITHUB_ENV
+          echo "go_mod=$(go env GOMODCACHE)" >> $GITHUB_ENV
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Caches/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: brew install pkg-config sdl2
+
+      - name: Install Go dependencies
+        run: go get -v
+
+      - name: Build
+        run: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -v -tags static -ldflags "-s -w -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexInstaller
+
+      - name: Update executable
+        run: |
+          chmod +x Not-NexInstaller
+
+      - name: Generate MacOS bundle
+        run: |
+          mkdir -p Not-NexInstaller.app/Contents/MacOS
+          mkdir -p Not-NexInstaller.app/Contents/Resources
+          cp macos/Info.plist Not-NexInstaller.app/Contents/Info.plist
+          mv Not-NexInstaller Not-NexInstaller.app/Contents/MacOS/Not-NexInstaller
+          cp macos/icon.icns Not-NexInstaller.app/Contents/Resources/icon.icns
+          zip -r Not-NexInstaller.MacOS.zip Not-NexInstaller.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Not-NexInstaller-macos
+          path: Not-NexInstaller.MacOS.zip
+
 
   build-windows:
     runs-on: windows-latest
@@ -103,7 +159,7 @@ jobs:
           CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -v -tags "static cli" -ldflags "-s -w -extldflags=-static -X 'vencordinstaller/buildinfo.InstallerGitHash=$(git rev-parse --short HEAD)' -X 'vencordinstaller/buildinfo.InstallerTag=${{ github.ref_name }}'" -o Not-NexInstallerCli.exe
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: Not-NexInstaller-windows
           path: |
@@ -113,18 +169,23 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-mac, build-windows]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v3
         with:
           name: Not-NexInstaller-linux
           path: linux
 
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v3
+        with:
+          name: Not-NexInstaller-macos
+          path: macos
+
+      - uses: actions/download-artifact@v3
         with:
           name: Not-NexInstaller-windows
           path: windows
@@ -132,11 +193,12 @@ jobs:
       - name: Create the release
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 # v1
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: ${{ github.ref_name }}
           prerelease: false
           draft: false
           files: |
             linux/Not-NexInstallerCli-linux
-            windows/Not-NexInstalle*.exe
+            macos/Not-NexInstaller.MacOS.zip
+            windows/VencordInstalle*.exe
