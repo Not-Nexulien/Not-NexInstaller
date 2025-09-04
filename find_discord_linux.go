@@ -33,7 +33,7 @@ func init() {
 	}
 	if sudoUser != "" {
 		if sudoUser == "root" {
-			panic("NexulienInstaller must not be run as the root user. Please rerun as normal user. Use sudo or doas to run as root.")
+			panic("Not-NexInstaller must not be run as the root user. Please rerun as normal user. Use sudo or doas to run as root.")
 		}
 
 		Log.Debug("NexulienInstaller was run with root privileges, actual user is", sudoUser)
@@ -47,7 +47,7 @@ func init() {
 			_ = os.Setenv("HOME", u.HomeDir)
 		}
 	} else if os.Getuid() == 0 {
-		panic("NexulienInstaller was run as root but neither SUDO_USER nor DOAS_USER are set. Please rerun me as a normal user, with sudo/doas, or manually set SUDO_USER to your username")
+		panic("Not-NexInstaller was run as root but neither SUDO_USER nor DOAS_USER are set. Please rerun me as a normal user, with sudo/doas, or manually set SUDO_USER to your username")
 	}
 	Home = os.Getenv("HOME")
 
