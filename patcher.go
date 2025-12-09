@@ -21,8 +21,8 @@ var FilesDirErr error
 var Patcher string
 
 func init() {
-	if dir := os.Getenv("VENCORD_USER_DATA_DIR"); dir != "" {
-		Log.Debug("Using VENCORD_USER_DATA_DIR")
+	if dir := os.Getenv("NOT_NEX_USER_DATA_DIR"); dir != "" {
+		Log.Debug("Using NOT_NEX_USER_DATA_DIR")
 		BaseDir = dir
 	} else if dir = os.Getenv("DISCORD_USER_DATA_DIR"); dir != "" {
 		Log.Debug("Using DISCORD_USER_DATA_DIR/../VencordData")
